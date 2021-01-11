@@ -3,16 +3,25 @@ const puppeteer = require("puppeteer");
 function autoImages() {
   const autoImage = require("./autoImage");
 
-  return autoImage.getRandomImage();
+  return autoImage.getRandomImages();
+}
+
+function autoVideos() {
+  const autoVideo = require("./autoImage");
+  return autoVideo.getRandomGifs();
 }
 
 // const autoImage = require("autoImage");
+var contactName = "والارمورگولیس(زن عنکبوتی)";
+// const contactName = "مرتضی";
 var latestMessageNow = "null";
 var latestMessagePrev = "null";
+// var page;
 var messageToSend = "null";
 async function lastMessage() {
   const LatestMessage = await page.evaluate((latestMessageNow) => {
     let messageParent = document.querySelectorAll(".message-in");
+    // let messageParent = document.querySelectorAll(".message-out");
     const b = [...messageParent];
     let c = b.map((h) => h.innerText);
     let lastmessageText = c[c.length - 1];
@@ -89,13 +98,13 @@ async function messageSender(messageToSend2, amountOfMessages) {
     await delay(5000);
 
     //Change to contact you want to send messages to
-    const contactName = "والارمورگولیس(زن عنکبوتی)";
+
     // const contactName = "Danial Madmolil";
     clicked = false;
-
     await page.click(`span[title='${contactName}']`);
+    // checkContact();
 
-    console.log("contact selected");
+    // console.log("contact selected");
     await page.waitForSelector("._2AuNk");
 
     //Finds the message bar and focuses on it
@@ -108,48 +117,64 @@ async function messageSender(messageToSend2, amountOfMessages) {
     // messageSender("fuck you", 100);
     //Loops through cycle of sending message
     while (true) {
-      if (latestMessageNow == latestMessagePrev) {
-        await lastMessage();
-        console.log("latestMessageNow: " + latestMessageNow);
-        // console.log("latestMessageNow == latestMessagePrev");
-        await delay(1000);
-      } else {
-        // console.log("latestMessageNow != latestMessagePrev");
-        await lastMessage();
-        console.log("latestMessageNow: " + latestMessageNow);
-        const words = words2();
-        words221 = "عکس";
-        for (let i = 0; i < words.length; i++) {
-          // -------------------------------------HERE-----------------------------------------------
-          if (
-            latestMessageNow != null &&
-            latestMessageNow.includes(words[i].BadWord)
-          ) {
-            console.log("bad word found: " + words[i].Response);
-            // let dd = words[i].Response;
-            // let dd = "danial";
-            await messageSender(words[i].Response, 1);
-            console.log("sending response succesful");
-            latestMessagePrev = latestMessageNow;
-            await delay(1000);
-            break;
-          } else if (latestMessageNow.includes(words221)) {
-            let newImage = await autoImages();
-            await messageSender(
-              newImage[getRandomNumbers(newImage.length) - 1],
-              1
-            );
-            console.log("sending response succesful");
-            i = words.length - 1;
-            latestMessagePrev = latestMessageNow;
-          } else {
-            // console.log("no bad word");
-            // await delay(5000);
+      try {
+        if (latestMessageNow == latestMessagePrev) {
+          // checkContact();
+          await lastMessage();
+          console.log("latestMessageNow: " + latestMessageNow);
+          // console.log("latestMessageNow == latestMessagePrev");
+          await delay(1000);
+        } else {
+          // checkContact();
+          // console.log("latestMessageNow != latestMessagePrev");
+          await lastMessage();
+          console.log("latestMessageNow: " + latestMessageNow);
+          const words = words2();
+          words221 = "عکس";
+          for (let i = 0; i < words.length; i++) {
+            // -------------------------------------HERE-----------------------------------------------
+            if (
+              latestMessageNow != null &&
+              latestMessageNow.includes(words[i].BadWord)
+            ) {
+              console.log("bad word found: " + words[i].Response);
+              // let dd = words[i].Response;
+              // let dd = "danial";
+              await messageSender(words[i].Response, 1);
+              console.log("sending response succesful");
+              latestMessagePrev = latestMessageNow;
+              await delay(1000);
+              break;
+            } else if (
+              latestMessageNow != null &&
+              latestMessageNow.includes(words221)
+            ) {
+              let newImage = await autoImages();
+              await messageSender(newImage, 1);
+              console.log("sending response succesful");
+              // i = words.length - 1;
+              latestMessagePrev = latestMessageNow;
+              break;
+            } else if (
+              latestMessageNow != null &&
+              latestMessageNow.includes(words[i].SexWord)
+            ) {
+              let newVideo = await autoVideos();
+              await messageSender(newVideo, 1);
+              console.log("sending response succesful");
+              // i = words.length - 1;
+              latestMessagePrev = latestMessageNow;
+              break;
+            } else {
+            }
           }
         }
+        await delay(1000);
+        console.log("reCheck");
+      } catch (error) {
+        await delay(20000);
+        console.log("error: " + error);
       }
-      await delay(1000);
-      console.log("reCheck");
     }
     await lastMessage();
     console.log("latestMessageNow2: " + latestMessageNow);
@@ -162,6 +187,26 @@ function delay(time) {
   return new Promise(function (resolve) {
     setTimeout(resolve, time);
   });
+}
+
+async function checkContact() {
+  try {
+    // contactName = "والارمورگولیس(زن عنکبوتی)";
+    let checkContacts = page.document.querySelectorAll(
+      `span[title='${contactName}']`
+    );
+
+    if (checkContacts.length < 2) {
+      await page.click(`span[title='${contactName}']`);
+      console.log("Contact selected");
+      // await delay(5000);
+    } else {
+      // await delay(5000);
+    }
+  } catch (error) {
+    console.log("contact was not found: " + error);
+    console.log("fuck you:" + page);
+  }
 }
 
 function words2() {
